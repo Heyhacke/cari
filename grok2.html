@@ -1,0 +1,540 @@
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence, useViewportScroll, Variants } from 'framer-motion';
+import { 
+  Star, ArrowRight, Sparkles, Rocket, Brain, 
+  Code, Zap, Shield, Database, 
+  MessageCircle, Users, Globe, ChevronDown, CheckCircle, XCircle 
+} from 'lucide-react';
+
+// Types for better type safety
+interface Particle {
+  id: string;
+  x: number;
+  y: number;
+  z: number;
+  size: number;
+  speed: number;
+  opacity: number;
+  background: string;
+  trajectoryOffset: { x: number; y: number };
+}
+
+interface Feature {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  color: string;
+  gradient: string;
+  tooltipContent: string;
+}
+
+interface ConversationEntry {
+  query: string;
+  response: string;
+  success: boolean;
+}
+
+// Enhanced Particle Background with Optimized Performance
+const ParticleBackground: React.FC = () => {
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Memoized color generation to reduce redundant calculations
+  const generateParticleColor = useCallback((): string => {
+    const gradients = [
+      'radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(16,185,129,0) 70%)',
+      'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0) 70%)',
+      'radial-gradient(circle, rgba(236,72,153,0.3) 0%, rgba(236,72,153,0) 70%)',
+      'radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)'
+    ];
+    return gradients[Math.floor(Math.random() * gradients.length)];
+  }, []);
+
+  // Optimize particle generation with useCallback
+  const generateParticles = useCallback(() => {
+    const particleCount = 400;
+    return Array.from({ length: particleCount }, () => ({
+      id: Math.random().toString(36).substr(2, 9),
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      z: Math.random(), 
+      size: Math.random() * 10 + 1,
+      speed: Math.random() * 0.8 + 0.1,
+      opacity: Math.random() * 0.7 + 0.3,
+      background: generateParticleColor(),
+      trajectoryOffset: {
+        x: (Math.random() - 0.5) * 30,
+        y: (Math.random() - 0.5) * 30
+      }
+    }));
+  }, [generateParticleColor]);
+
+  // Use useEffect for particle regeneration
+  useEffect(() => {
+    const newParticles = generateParticles();
+    setParticles(newParticles);
+
+    const intervalId = setInterval(() => {
+      setParticles(generateParticles());
+    }, 8000);
+
+    return () => clearInterval(intervalId);
+  }, [generateParticles]);
+
+  // Particle animation variants for more consistent animations
+  const particleVariants: Variants = {
+    initial: (particle: Particle) => ({ 
+      opacity: 0,
+      x: `${particle.x}%`,
+      y: `${particle.y}%`,
+      scale: 1
+    }),
+    animate: (particle: Particle) => ({ 
+      opacity: [particle.opacity, particle.opacity * 1.5, particle.opacity],
+      scale: [1, particle.z > 0.7 ? 1.5 : 1, 1],
+      x: `calc(${particle.x}% + ${particle.trajectoryOffset.x}px)`,
+      y: `calc(${particle.y}% + ${particle.trajectoryOffset.y}px)`,
+      transition: { 
+        duration: 12,
+        repeat: Infinity,
+        repeatType: 'reverse',
+        delay: Math.random() * 4
+      }
+    })
+  };
+
+  return (
+    <motion.div 
+      ref={containerRef}
+      className="fixed inset-0 overflow-hidden pointer-events-none z-0"
+      style={{
+        background: 'radial-gradient(ellipse at bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,1) 100%)'
+      }}
+    >
+      <AnimatePresence>
+        {particles.map((particle) => (
+          <motion.div
+            key={particle.id}
+            custom={particle}
+            variants={particleVariants}
+            initial="initial"
+            animate="animate"
+            className="absolute rounded-full blur-[2px] opacity-60"
+            style={{
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              background: particle.background,
+              transform: `translateZ(${particle.z * 200}px)`
+            }}
+          />
+        ))}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+// Enhanced Features Section with Improved Accessibility and Performance
+const FeaturesSection: React.FC = () => {
+  const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
+
+  // Centralize features configuration
+  const features: Feature[] = [
+    {
+      icon: <Code className="text-emerald-400" size={48} />,
+      title: 'Advanced Programming',
+      description: 'Comprehensive code generation and debugging across multiple languages.',
+      color: 'emerald',
+      gradient: 'from-emerald-500 to-emerald-700',
+      tooltipContent: 'Generate, refactor, and optimize code with AI-powered precision.'
+    },
+    {
+      icon: <Zap className="text-blue-400" size={48} />,
+      title: 'Rapid Insights',
+      description: 'Ultra-fast processing with state-of-the-art AI reasoning.',
+      color: 'blue',
+      gradient: 'from-blue-500 to-blue-700',
+      tooltipContent: 'Get instant, deep insights from complex data and scenarios.'
+    },
+    {
+      icon: <Shield className="text-purple-400" size={48} />,
+      title: 'Ethical AI',
+      description: 'Robust safety protocols and transparent decision-making.',
+      color: 'purple',
+      gradient: 'from-purple-500 to-purple-700',
+      tooltipContent: 'AI that prioritizes safety, fairness, and transparent reasoning.'
+    },
+    {
+      icon: <Database className="text-pink-400" size={48} />,
+      title: 'Vast Knowledge',
+      description: 'Trained on extensive, up-to-date multidisciplinary datasets.',
+      color: 'pink',
+      gradient: 'from-pink-500 to-pink-700',
+      tooltipContent: 'Access a comprehensive, continuously updated knowledge base.'
+    }
+  ];
+
+  // Memoize feature rendering to prevent unnecessary re-renders
+  const renderFeatures = useMemo(() => 
+    features.map((feature, index) => (
+      <motion.div
+        key={feature.title}
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ 
+          duration: 0.6, 
+          delay: index * 0.2 
+        }}
+        onHoverStart={() => setHoveredFeature(feature.title)}
+        onHoverEnd={() => setHoveredFeature(null)}
+        whileHover={{ 
+          scale: 1.05,
+          rotate: 2,
+          boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)',
+          transition: { type: 'spring', stiffness: 300 }
+        }}
+        className={`
+          relative overflow-hidden
+          bg-gray-900/80 backdrop-blur-md 
+          rounded-2xl p-6 border border-white/10 
+          hover:border-${feature.color}-500/50 
+          transition-all duration-300
+          group
+          cursor-pointer
+        `}
+        role="article"
+        aria-label={feature.title}
+      >
+        {/* Gradient Overlay */}
+        <div 
+          className={`
+            absolute inset-0 
+            bg-gradient-to-br ${feature.gradient} 
+            opacity-0 group-hover:opacity-20 
+            transition-opacity duration-300
+          `}
+        ></div>
+
+        <div className="relative z-10">
+          <div className="mb-5 flex items-center justify-between">
+            {feature.icon}
+            <motion.div
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+              className="p-2 bg-white/10 rounded-full"
+            >
+              <ArrowRight className="text-white" size={20} />
+            </motion.div>
+          </div>
+          <h3 className="text-2xl font-bold mb-4 text-white">{feature.title}</h3>
+          <p className="text-white/70">{feature.description}</p>
+        </div>
+
+        {/* Interactive Tooltip with Improved Accessibility */}
+        {hoveredFeature === feature.title && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute bottom-full left-0 right-0 mb-4 z-50"
+            role="tooltip"
+          >
+            <div className="bg-emerald-900/90 text-white p-4 rounded-lg shadow-2xl text-center">
+              {feature.tooltipContent}
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+    )), [features, hoveredFeature]
+  );
+
+  return (
+    <section 
+      className="relative py-24 bg-black/95 overflow-hidden"
+      aria-labelledby="features-heading"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-black to-emerald-900/10 opacity-70"></div>
+      
+      <div className="max-w-6xl mx-auto px-4 relative z-10">
+        <motion.h2
+          id="features-heading"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-5xl font-bold text-center mb-16 text-white"
+        >
+          Unleash the Power of <span className="text-emerald-400">Intelligent AI</span>
+        </motion.h2>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {renderFeatures}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Main Hero Section with Enhanced Interaction and Performance
+const HeroSection: React.FC = () => {
+  const [typedText, setTypedText] = useState('');
+  const [inputText, setInputText] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<ConversationEntry[]>([]);
+  const [currentResponse, setCurrentResponse] = useState('');
+
+  // Centralize text constants
+  const HEADLINE_TEXT = "Understand The Universe";
+  const SUBTITLE_TEXT = "Grok 3 represents a quantum leap in AI - combining unparalleled reasoning with a comprehensive, continually updated knowledge base.";
+
+  // Memoize typing effect to reduce unnecessary re-renders
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (typedText.length < HEADLINE_TEXT.length) {
+        setTypedText(prev => HEADLINE_TEXT.slice(0, prev.length + 1));
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [typedText]);
+
+  // Simulate AI response with improved type safety and error handling
+  const simulateResponse = useCallback(() => {
+    if (!inputText.trim()) return;
+
+    setIsGenerating(true);
+    
+    // Centralize mock responses
+    const MOCK_RESPONSES = [
+      "That's an intriguing question! Let me break it down for you...",
+      "I'll provide a comprehensive analysis of your query...",
+      "Here's a detailed explanation based on my extensive knowledge...",
+      "Fascinating topic! Let's explore this together..."
+    ];
+
+    const randomResponse = MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
+    
+    // Improve response generation with more robust typing
+    let responseIndex = 0;
+    const typeResponse = setInterval(() => {
+      if (responseIndex < randomResponse.length) {
+        setCurrentResponse(prev => prev + randomResponse[responseIndex]);
+        responseIndex++;
+      } else {
+        clearInterval(typeResponse);
+        
+        // Update conversation history with type-safe entry
+        setConversationHistory(prev => [
+          ...prev, 
+          { 
+            query: inputText, 
+            response: randomResponse,
+            success: Math.random() > 0.2 // 80% success rate simulation
+          }
+        ]);
+        
+        setIsGenerating(false);
+        setTimeout(() => {
+          setCurrentResponse('');
+          setInputText('');
+        }, 3000);
+      }
+    }, 50);
+
+    return () => clearInterval(typeResponse);
+  }, [inputText]);
+
+  // Handle input submission with improved error prevention
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isGenerating) {
+      simulateResponse();
+    }
+  };
+
+  return (
+    <div 
+      className="relative h-screen flex items-center justify-center overflow-hidden"
+      aria-label="Grok AI Landing Page Hero Section"
+    >
+      <ParticleBackground />
+      
+      <div className="relative z-10 text-center max-w-4xl px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-6"
+        >
+          <motion.h1
+            className="text-6xl font-bold text-white mb-6 md:text-5xl sm:text-4xl"
+            aria-label={HEADLINE_TEXT}
+          >
+            {typedText.split(' ').map((word, index) => (
+              <React.Fragment key={index}>
+                {index > 0 && ' '}
+                {word === 'Universe' ? (
+                  <span className="text-emerald-400">{word}</span>
+                ) : (
+                  word
+                )}
+              </React.Fragment>
+            ))}
+            <motion.span 
+              animate={{ opacity: [0, 1, 0] }}
+              transition={{ 
+                duration: 0.7, 
+                repeat: Infinity 
+              }}
+              className="inline-block ml-1 bg-white"
+              aria-hidden="true"
+            >
+              |
+            </motion.span>
+          </motion.h1>
+        </motion.div>
+        
+        <motion.p
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="text-xl text-white/80 mb-12 md:text-lg sm:text-base"
+        >
+          {SUBTITLE_TEXT}
+        </motion.p>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="relative"
+        >
+          <form 
+            onSubmit={handleSubmit} 
+            className="flex items-center justify-center space-x-4"
+            aria-label="AI Query Input Form"
+          >
+            <motion.input
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              whileFocus={{ 
+                scale: 1.02,
+                boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.5)'
+              }}
+              className="bg-black/50 border border-white/20 text-white px-6 py-4 rounded-full w-full max-w-md transition-all duration-300 focus:outline-none"
+              placeholder="Ask Grok anything..."
+              disabled={isGenerating}
+              aria-label="AI Query Input"
+              aria-busy={isGenerating}
+            />
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              disabled={isGenerating}
+              className="bg-emerald-500 text-black px-6 py-4 rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Submit Query"
+            >
+              <Rocket className="text-black" size={24} />
+            </motion.button>
+          </form>
+
+          {/* AI Response and Interaction Simulation */}
+          {(inputText && isGenerating) && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute left-0 right-0 top-full mt-4 bg-gray-900/90 backdrop-blur-md rounded-xl p-6 text-left shadow-2xl"
+              role="status"
+              aria-live="polite"
+            >
+              <div className="flex items-center mb-4">
+                <Sparkles className="mr-3 text-emerald-400 animate-pulse" size={24} />
+                <div className="text-white/80">
+                  Generating response for: <span className="font-bold text-emerald-400">{inputText}</span>
+                </div>
+              </div>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 2 }}
+                className="h-1 bg-emerald-500 mb-4"
+                aria-hidden="true"
+              />
+              {currentResponse && (
+                <div className="text-white">
+                  {currentResponse}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Conversation History with Improved Accessibility */}
+          {conversationHistory.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 space-y-2 max-h-60 overflow-y-auto"
+              aria-label="Conversation History"
+            >
+              {conversationHistory.map((conv, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className={`
+                    p-4 rounded-lg 
+                    ${conv.success 
+                      ? 'bg-emerald-900/50 border-emerald-700' 
+                      : 'bg-red-900/50 border-red-700'}
+                    border
+                  `}
+                  role="log"
+                  aria-label={`Conversation entry ${index + 1}`}
+                >
+                  <div className="flex items-center mb-2">
+                    {conv.success 
+                      ? <CheckCircle className="mr-2 text-emerald-400" size={20} /> 
+                      : <XCircle className="mr-2 text-red-400" size={20} />}
+                    <span className="font-bold text-white">Query: {conv.query}</span>
+                  </div>
+                  <p className="text-white/80">{conv.response}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Scroll Indicator with Improved Accessibility */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            duration: 0.6, 
+            delay: 1,
+            repeat: Infinity,
+            repeatType: 'mirror'
+          }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/70 flex flex-col items-center"
+          role="button"
+          aria-label="Scroll to Explore"
+        >
+          <ChevronDown className="mb-2 animate-bounce" size={32} />
+          <span className="text-sm uppercase tracking-wider">Scroll to Explore</span>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+// Main App Component with Enhanced Sections and TypeScript Support
+const GrokLandingPage: React.FC = () => {
+  return (
+    <div 
+      className="bg-black min-h-screen text-white"
+      aria-label="Grok AI Landing Page"
+    >
+      <HeroSection />
+      <FeaturesSection />
+      {/* Additional sections can be added here */}
+    </div>
+  );
+};
+
+export default GrokLandingPage;

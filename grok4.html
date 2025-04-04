@@ -1,0 +1,418 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, AnimatePresence, useViewportScroll } from 'framer-motion';
+import { 
+  Star, ArrowRight, Sparkles, Rocket, Brain, 
+  Code, Zap, Shield, Database, 
+  MessageCircle, Users, Globe, ChevronDown 
+} from 'lucide-react';
+
+// Enhanced Particle Background with Advanced Dynamics
+const ParticleBackground = () => {
+  const [particles, setParticles] = useState([]);
+  const containerRef = useRef(null);
+  const { scrollY } = useViewportScroll();
+
+  // More sophisticated color palette with dynamic gradients
+  const generateParticleColor = () => {
+    const gradients = [
+      'radial-gradient(circle, rgba(16,185,129,0.5) 0%, rgba(16,185,129,0) 70%)',
+      'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0) 70%)',
+      'radial-gradient(circle, rgba(236,72,153,0.3) 0%, rgba(236,72,153,0) 70%)',
+      'radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)'
+    ];
+    return gradients[Math.floor(Math.random() * gradients.length)];
+  };
+
+  // More complex particle generation with advanced physics-like behavior
+  const generateParticles = useMemo(() => {
+    const particleCount = 300;
+    return Array.from({ length: particleCount }, () => ({
+      id: Math.random().toString(36).substr(2, 9),
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      z: Math.random(), // depth layer
+      size: Math.random() * 8 + 1,
+      speed: Math.random() * 0.8 + 0.1,
+      opacity: Math.random() * 0.7 + 0.3,
+      background: generateParticleColor(),
+      trajectoryOffset: {
+        x: (Math.random() - 0.5) * 20,
+        y: (Math.random() - 0.5) * 20
+      }
+    }));
+  }, []);
+
+  useEffect(() => {
+    setParticles(generateParticles);
+    const intervalId = setInterval(() => {
+      setParticles(generateParticles);
+    }, 10000);
+    return () => clearInterval(intervalId);
+  }, [generateParticles]);
+
+  return (
+    <motion.div 
+      ref={containerRef}
+      className="fixed inset-0 overflow-hidden pointer-events-none z-0"
+      style={{
+        background: 'radial-gradient(ellipse at bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,1) 100%)'
+      }}
+    >
+      <AnimatePresence>
+        {particles.map((particle) => (
+          <motion.div
+            key={particle.id}
+            initial={{ 
+              opacity: 0,
+              x: `${particle.x}%`,
+              y: `${particle.y}%`,
+              scale: 1
+            }}
+            animate={{ 
+              opacity: [particle.opacity, particle.opacity * 1.5, particle.opacity],
+              scale: [1, particle.z > 0.7 ? 1.5 : 1, 1],
+              x: `calc(${particle.x}% + ${particle.trajectoryOffset.x}px)`,
+              y: `calc(${particle.y}% + ${particle.trajectoryOffset.y}px)`,
+              transition: { 
+                duration: 10,
+                repeat: Infinity,
+                repeatType: 'reverse',
+                delay: Math.random() * 3
+              }
+            }}
+            className="absolute rounded-full blur-[2px] opacity-60"
+            style={{
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              background: particle.background,
+              transform: `translateZ(${particle.z * 150}px)`
+            }}
+          />
+        ))}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+// Advanced Features Section with Interactive Hover Effects
+const FeaturesSection = () => {
+  const features = [
+    {
+      icon: <Code className="text-emerald-400" size={48} />,
+      title: 'Advanced Programming',
+      description: 'Comprehensive code generation and debugging across multiple languages.',
+      color: 'emerald',
+      gradient: 'from-emerald-500 to-emerald-700'
+    },
+    {
+      icon: <Zap className="text-blue-400" size={48} />,
+      title: 'Rapid Insights',
+      description: 'Ultra-fast processing with state-of-the-art AI reasoning.',
+      color: 'blue',
+      gradient: 'from-blue-500 to-blue-700'
+    },
+    {
+      icon: <Shield className="text-purple-400" size={48} />,
+      title: 'Ethical AI',
+      description: 'Robust safety protocols and transparent decision-making.',
+      color: 'purple',
+      gradient: 'from-purple-500 to-purple-700'
+    },
+    {
+      icon: <Database className="text-pink-400" size={48} />,
+      title: 'Vast Knowledge',
+      description: 'Trained on extensive, up-to-date multidisciplinary datasets.',
+      color: 'pink',
+      gradient: 'from-pink-500 to-pink-700'
+    }
+  ];
+
+  return (
+    <section className="relative py-24 bg-black/95 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-black to-emerald-900/10 opacity-70"></div>
+      
+      <div className="max-w-6xl mx-auto px-4 relative z-10">
+        <motion.h2
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-5xl font-bold text-center mb-16 text-white"
+        >
+          Unleash the Power of <span className="text-emerald-400">Intelligent AI</span>
+        </motion.h2>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ 
+                duration: 0.6, 
+                delay: index * 0.2 
+              }}
+              whileHover={{ 
+                scale: 1.05,
+                rotate: 2,
+                boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)',
+                transition: { type: 'spring', stiffness: 300 }
+              }}
+              className={`
+                relative overflow-hidden
+                bg-gray-900/80 backdrop-blur-md 
+                rounded-2xl p-6 border border-white/10 
+                hover:border-${feature.color}-500/50 
+                transition-all duration-300
+                group
+              `}
+            >
+              {/* Gradient Overlay */}
+              <div 
+                className={`
+                  absolute inset-0 
+                  bg-gradient-to-br ${feature.gradient} 
+                  opacity-0 group-hover:opacity-20 
+                  transition-opacity duration-300
+                `}
+              ></div>
+
+              <div className="relative z-10">
+                <div className="mb-5 flex items-center justify-between">
+                  {feature.icon}
+                  <motion.div
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                    className="p-2 bg-white/10 rounded-full"
+                  >
+                    <ArrowRight className="text-white" size={20} />
+                  </motion.div>
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-white">{feature.title}</h3>
+                <p className="text-white/70">{feature.description}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Navigation with Advanced Dropdown and Scroll Tracking
+const Navigation = () => {
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const { scrollYProgress } = useViewportScroll();
+
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.onChange((latest) => {
+      setScrollProgress(latest * 100);
+    });
+    return () => unsubscribe();
+  }, [scrollYProgress]);
+
+  const navigationItems = [
+    {
+      label: 'Solutions',
+      icon: <Brain className="mr-2 text-emerald-400" />,
+      subItems: [
+        { 
+          label: 'Enterprise AI', 
+          description: 'Advanced AI solutions for businesses',
+          icon: <Users className="mr-2 text-blue-400" />
+        },
+        { 
+          label: 'Research Tools', 
+          description: 'Powerful AI for academic and scientific research',
+          icon: <Globe className="mr-2 text-purple-400" />
+        },
+        { 
+          label: 'Developer Platform', 
+          description: 'AI-powered coding and development',
+          icon: <Code className="mr-2 text-pink-400" />
+        }
+      ]
+    },
+    // ... rest of the navigation items remain the same
+  ];
+
+  return (
+    <>
+      {/* Scroll Progress Bar */}
+      <motion.div 
+        style={{ 
+          width: `${scrollProgress}%`, 
+          height: '4px',
+          background: 'linear-gradient(to right, #10b981, #059669)'
+        }}
+        className="fixed top-0 left-0 z-[100]"
+      />
+      <nav className="fixed top-0 left-0 right-0 z-50 p-4 bg-black/70 backdrop-blur-xl">
+        {/* Rest of the navigation remains the same */}
+      </nav>
+    </>
+  );
+};
+
+// Enhanced Hero Section with More Interactive Elements
+const HeroSection = () => {
+  const [typedText, setTypedText] = useState('');
+  const [inputText, setInputText] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const headlineText = "Understand The Universe";
+  const subtitleText = "Grok 3 represents a quantum leap in AI - combining unparalleled reasoning with a comprehensive, continually updated knowledge base.";
+
+  // Typing effect for headline
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (typedText.length < headlineText.length) {
+        setTypedText(prev => headlineText.slice(0, prev.length + 1));
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [typedText]);
+
+  // AI-like input simulation with more advanced interaction
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputText(value);
+  };
+
+  const simulateResponse = () => {
+    if (inputText.trim()) {
+      setIsGenerating(true);
+      setTimeout(() => {
+        setIsGenerating(false);
+      }, 2500);
+    }
+  };
+
+  return (
+    <div className="relative h-screen flex items-center justify-center overflow-hidden">
+      <ParticleBackground />
+      
+      <div className="relative z-10 text-center max-w-4xl px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-6"
+        >
+          <motion.h1
+            className="text-6xl font-bold text-white mb-6 md:text-5xl sm:text-4xl"
+          >
+            {typedText.split(' ').map((word, index) => (
+              <React.Fragment key={index}>
+                {index > 0 && ' '}
+                {word === 'Universe' ? (
+                  <span className="text-emerald-400">{word}</span>
+                ) : (
+                  word
+                )}
+              </React.Fragment>
+            ))}
+            <motion.span 
+              animate={{ opacity: [0, 1, 0] }}
+              transition={{ 
+                duration: 0.7, 
+                repeat: Infinity 
+              }}
+              className="inline-block ml-1 bg-white"
+            >
+              |
+            </motion.span>
+          </motion.h1>
+        </motion.div>
+        
+        <motion.p
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="text-xl text-white/80 mb-12 md:text-lg sm:text-base"
+        >
+          {subtitleText}
+        </motion.p>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="relative"
+        >
+          <div className="flex items-center justify-center space-x-4">
+            <motion.input
+              value={inputText}
+              onChange={handleInputChange}
+              onKeyDown={(e) => e.key === 'Enter' && simulateResponse()}
+              whileFocus={{ 
+                scale: 1.02,
+                boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.5)'
+              }}
+              className="bg-black/50 border border-white/20 text-white px-6 py-4 rounded-full w-full max-w-md transition-all duration-300 focus:outline-none"
+              placeholder="Ask Grok anything..."
+            />
+            <motion.button
+              onClick={simulateResponse}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="bg-emerald-500 text-black px-6 py-4 rounded-full"
+            >
+              <Rocket className="text-black" size={24} />
+            </motion.button>
+          </div>
+
+          {(inputText && isGenerating) && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute left-0 right-0 top-full mt-4 bg-gray-900/90 backdrop-blur-md rounded-xl p-6 text-left shadow-2xl"
+            >
+              <div className="flex items-center mb-4">
+                <Sparkles className="mr-3 text-emerald-400 animate-pulse" size={24} />
+                <div className="text-white/80">
+                  Generating response for: <span className="font-bold text-emerald-400">{inputText}</span>
+                </div>
+              </div>
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 2 }}
+                className="h-1 bg-emerald-500"
+              />
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Scroll Indicator */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            duration: 0.6, 
+            delay: 1,
+            repeat: Infinity,
+            repeatType: 'mirror'
+          }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/70 flex flex-col items-center"
+        >
+          <ChevronDown className="mb-2 animate-bounce" size={32} />
+          <span className="text-sm uppercase tracking-wider">Scroll to Explore</span>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+// Main App Component with Enhanced Sections
+const GrokLandingPage = () => {
+  return (
+    <div className="bg-black min-h-screen text-white">
+      <Navigation />
+      <HeroSection />
+      <FeaturesSection />
+      <TestimonialsSection />
+    </div>
+  );
+};
+
+export default GrokLandingPage;
